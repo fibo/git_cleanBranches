@@ -54,10 +54,15 @@ Go to default branch.
     fi
 
 Remove local branches (excluding main branch) that are already merged.
+Branches checked out in a worktree are kept.
 
-    git branch --merged | grep -v $DEFAULT_BRANCH | while read BRANCH_NAME
+    git branch --format='%(refname:short) %(worktreepath)' --merged | while read BRANCH_NAME WORKTREE_PATH
       do
-        git branch -d $BRANCH_NAME
+        if [ -z "$WORKTREE_PATH" ]; then
+          git branch -d $BRANCH_NAME
+        elif [ "$BRANCH_NAME" != "$DEFAULT_BRANCH" ]; then
+          echo "worktree $BRANCH_NAME"
+        fi
       done
 
 Remove local branches and worktrees which remote reference does not exist anymore.

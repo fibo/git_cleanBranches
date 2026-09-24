@@ -4,9 +4,13 @@ DEFAULT_BRANCH=`basename $(git symbolic-ref refs/remotes/origin/HEAD)`
 if [ "$DEFAULT_BRANCH" != "$WORKING_BRANCH" ]; then
   git switch $DEFAULT_BRANCH
 fi
-git branch --merged | grep -v $DEFAULT_BRANCH | while read BRANCH_NAME
+git branch --format='%(refname:short) %(worktreepath)' --merged | while read BRANCH_NAME WORKTREE_PATH
   do
-    git branch -d $BRANCH_NAME
+    if [ -z "$WORKTREE_PATH" ]; then
+      git branch -d $BRANCH_NAME
+    elif [ "$BRANCH_NAME" != "$DEFAULT_BRANCH" ]; then
+      echo "worktree $BRANCH_NAME"
+    fi
   done
 git fetch --prune
 for BRANCH_REF in $(git branch -v | grep '\[gone\]' | grep '^+' | awk '{print $3}')
